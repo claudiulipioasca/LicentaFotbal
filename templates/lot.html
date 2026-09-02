@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lot Echipa - {{ nume_echipa }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: linear-gradient(135deg, #12141d 0%, #1b2028 100%) !important;
+            background-attachment: fixed !important;
+            color: #f8f9fa;
+            animation: intrareLina 0.5s ease-out;
+        }
+
+        @keyframes intrareLina {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3, .fw-bold {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+        }
+
+        .card, .modal-content, .table-container, .list-group-item {
+            background: rgba(33, 37, 41, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .btn {
+            border-radius: 8px !important;
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #198754, #20c997) !important;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffecd2) !important;
+            color: #000 !important;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) !important;
+            filter: brightness(1.1);
+        }
+
+        .table { background-color: transparent !important; color: #e9ecef !important; }
+        .table-dark { --bs-table-bg: transparent; }
+        .table-striped>tbody>tr:nth-of-type(odd)>* { background-color: rgba(255, 255, 255, 0.02) !important; color: #e9ecef !important; }
+        .table-hover>tbody>tr:hover>* { background-color: rgba(255, 255, 255, 0.06) !important; color: #fff !important; }
+        td, th { border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+            border-radius: 8px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .player-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        .player-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.6) !important;
+            cursor: pointer;
+        }
+        .jersey-number {
+            font-size: 4.5rem;
+            font-weight: 900;
+            opacity: 0.15;
+            position: absolute;
+            top: -15px;
+            right: 15px;
+            pointer-events: none;
+        }
+        .text-muted {
+            color: #adb5bd !important;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .card .text-muted {
+            color: #ced4da !important;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light pb-5">
+
+    <div class="container mt-5">
+        <a href="/echipa/{{ id_liga }}/{{ nume_echipa }}" class="btn btn-outline-light mb-4">← Înapoi la Profilul Echipei</a>
+
+        <h1 class="text-center mb-5 fw-bold">Lotul Echipei: <span class="text-info">{{ nume_echipa }}</span></h1>
+
+        {% if jucatori %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+
+            {% for j in jucatori %}
+                {% set pozitie = j['Poziție'].lower() %}
+
+                {% if 'keeper' in pozitie or 'portar' in pozitie %}
+                    {% set card_color = 'bg-warning text-dark' %}
+                    {% set badge_color = 'bg-dark text-warning' %}
+                {% elif 'defender' in pozitie or 'back' in pozitie or 'funda' in pozitie %}
+                    {% set card_color = 'bg-primary text-light' %}
+                    {% set badge_color = 'bg-light text-primary' %}
+                {% elif 'midfield' in pozitie or 'mijloca' in pozitie %}
+                    {% set card_color = 'bg-success text-light' %}
+                    {% set badge_color = 'bg-light text-success' %}
+                {% else %}
+                    {% set card_color = 'bg-danger text-light' %}
+                    {% set badge_color = 'bg-light text-danger' %}
+                {% endif %}
+
+                <div class="col">
+                    <div class="card h-100 player-card {{ card_color }} border-0 shadow">
+                        <div class="card-body position-relative text-center pt-4 pb-4">
+                            <div class="jersey-number">{{ j['Număr'] }}</div>
+
+                            <h5 class="card-title fw-bold mt-2 mb-3">{{ j['Nume Jucător'] }}</h5>
+
+                            <p class="card-text mb-3">
+                                <span class="badge {{ badge_color }} fs-6 px-3 py-2 rounded-pill shadow-sm">
+                                    {{ j['Poziție'] }}
+                                </span>
+                            </p>
+
+                            <p class="card-text small mb-0 fw-bold">Vârstă: {{ j['Vârstă'] }} ani</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+        {% else %}
+        <div class="alert alert-danger text-center shadow-lg rounded-4 p-4 mt-5" role="alert">
+            <h4 class="alert-heading fw-bold">Eroare Conexiune</h4>
+            <p class="mb-0 fs-5">Nu am putut prelua lotul în acest moment. Posibil ca serverul sursă să fie suprasolicitat. Încearcă din nou!</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script>
+        VanillaTilt.init(document.querySelectorAll(".player-card"), {
+            max: 15,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.3
+        });
+    </script>
+</body>
+</html>

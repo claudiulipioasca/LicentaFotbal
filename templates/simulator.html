@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulator: {{ liga_curenta }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background-color: #1a1d20 !important;
+            color: #f8f9fa;
+        }
+        h1, h2, h3, .fw-bold { font-family: 'Oswald', sans-serif !important; letter-spacing: 0.5px; }
+
+        .card, .table-container {
+            background-color: #212529 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .table { background-color: transparent !important; color: #e9ecef !important; }
+        .table-dark { --bs-table-bg: transparent; }
+        td, th { border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; vertical-align: middle; }
+
+        /* Stil pentru inputurile de scor (să arate bine) */
+        .score-input {
+            width: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            background-color: #343a40;
+            color: #ffc107; /* Culoare aurie pentru scorul introdus */
+            border: 1px solid #198754;
+            border-radius: 8px;
+        }
+        .score-input:focus {
+            background-color: #495057;
+            color: #ffc107;
+            box-shadow: 0 0 10px rgba(25, 135, 84, 0.5);
+            border-color: #20c997;
+            outline: none;
+        }
+
+        /* Ascundem sagetile de la input number */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+    </style>
+</head>
+<body class="pb-5">
+
+    <div class="container mt-5">
+        <a href="/liga/{{ id_liga }}" class="btn btn-outline-light mb-4">← Înapoi la Clasament</a>
+        <h1 class="text-center fw-bold text-warning mb-2">🔮 Simulator Live: <span class="text-light">{{ liga_curenta }}</span></h1>
+        <p class="text-center text-muted fs-5 mb-5">Introdu rezultatele pentru viitoarea etapă și vezi cum se modifică clasamentul în timp real!</p>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card p-3 h-100">
+                    <h3 class="fw-bold text-success border-bottom border-secondary pb-3 mb-4 text-center">Meciuri Etapa Următoare</h3>
+
+                    {% if not meciuri %}
+                        <div class="alert alert-secondary text-center">Nu s-au găsit meciuri viitoare pentru acest campionat.</div>
+                    {% endif %}
+
+                    {% for meci in meciuri %}
+                    <div class="match-row d-flex justify-content-between align-items-center mb-3 bg-dark p-2 rounded shadow-sm"
+                         data-gazda="{{ meci.gazda }}" data-oaspete="{{ meci.oaspete }}">
+
+                        <div class="text-end d-flex align-items-center justify-content-end gap-2" style="flex: 1;">
+                            <span class="fw-bold">{{ meci.gazda }}</span>
+                            <img src="{{ meci.logo_gazda }}" width="25" height="25" style="object-fit: contain;">
+                        </div>
+
+                        <div class="d-flex align-items-center mx-3 gap-2">
+                            <input type="number" min="0" class="score-input scor-gazda" placeholder="-">
+                            <span class="fw-bold text-muted fs-5">:</span>
+                            <input type="number" min="0" class="score-input scor-oaspete" placeholder="-">
+                        </div>
+
+                        <div class="text-start d-flex align-items-center gap-2" style="flex: 1;">
+                            <img src="{{ meci.logo_oaspete }}" width="25" height="25" style="object-fit: contain;">
+                            <span class="fw-bold">{{ meci.oaspete }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="table-responsive table-container p-3 h-100">
+                    <table class="table table-dark table-hover m-0 text-center">
+                        <thead>
+                            <tr class="text-muted text-uppercase">
+                                <th>Loc</th>
+                                <th class="text-start">Echipă</th>
+                                <th title="Meciuri Jucate">M</th>
+                                <th title="Goluri Date">GM</th>
+                                <th title="Goluri Primite">GP</th>
+                                <th title="Golaveraj">GD</th>
+                                <th class="text-warning">PCT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="live-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Luăm datele din Python (Lista cu clasamentul curent)
+        const clasamentInitial = {{ clasament_json | safe }};
+        const totalEchipe = clasamentInitial.length;
+
+        // 2. Funcția de actualizare în timp real
+        function calculeazaClasament() {
+            // Facem o copie proaspătă a clasamentului inițial (Reset)
+            let clasament = JSON.parse(JSON.stringify(clasamentInitial));
+
+            // Creăm un dicționar pentru acces rapid la echipe după nume
+            let echipeDict = {};
+            clasament.forEach(e => echipeDict[e.echipa] = e);
+
+            // 3. Citim toate scorurile introduse de utilizator
+            const matches = document.querySelectorAll('.match-row');
+            matches.forEach(match => {
+                const gazda = match.getAttribute('data-gazda');
+                const oaspete = match.getAttribute('data-oaspete');
+                const golG = match.querySelector('.scor-gazda').value;
+                const golO = match.querySelector('.scor-oaspete').value;
+
+                // Dacă ambele căsuțe au un număr, aplicăm rezultatul!
+                if (golG !== "" && golO !== "") {
+                    const g = parseInt(golG);
+                    const o = parseInt(golO);
+
+                    if (echipeDict[gazda] && echipeDict[oaspete]) {
+                        // Creștem numărul de meciuri jucate
+                        echipeDict[gazda].meciuri += 1;
+                        echipeDict[oaspete].meciuri += 1;
+
+                        // Adăugăm golurile
+                        echipeDict[gazda].gd += g;
+                        echipeDict[gazda].gp += o;
+                        echipeDict[gazda].golaveraj += (g - o);
+
+                        echipeDict[oaspete].gd += o;
+                        echipeDict[oaspete].gp += g;
+                        echipeDict[oaspete].golaveraj += (o - g);
+
+                        // Alocăm punctele (Regula 3 - 1 - 0)
+                        if (g > o) {
+                            echipeDict[gazda].puncte += 3; // Bate Gazda
+                        } else if (g === o) {
+                            echipeDict[gazda].puncte += 1; // Egal
+                            echipeDict[oaspete].puncte += 1;
+                        } else {
+                            echipeDict[oaspete].puncte += 3; // Bate Oaspetele
+                        }
+                    }
+                }
+            });
+
+            // 4. Sortăm noul clasament: 1. Puncte -> 2. Golaveraj -> 3. Goluri Date
+            clasament.sort((a, b) => {
+                if (b.puncte !== a.puncte) return b.puncte - a.puncte;
+                if (b.golaveraj !== a.golaveraj) return b.golaveraj - a.golaveraj;
+                return b.gd - a.gd;
+            });
+
+            // 5. Desenăm clasamentul în HTML
+            const tbody = document.getElementById('live-table-body');
+            tbody.innerHTML = ''; // Ștergem tabelul vechi
+
+            clasament.forEach((echipa, index) => {
+                const loc = index + 1;
+
+                // Colorăm pozițiile (Champions League, Retrogradare etc.)
+                let clasaCSS = "";
+                if (loc <= 4) clasaCSS = "bg-primary text-white";
+                else if (loc === 5) clasaCSS = "bg-warning text-dark";
+                else if (loc === 6) clasaCSS = "bg-success text-white";
+                else if (loc > totalEchipe - 3) clasaCSS = "bg-danger text-white";
+
+                let badge = clasaCSS ? `<span class="badge ${clasaCSS} fs-6 w-100 py-1 shadow-sm" style="min-width: 30px;">${loc}</span>`
+                                     : `<span class="badge bg-secondary fs-6 w-100 py-1 text-light" style="min-width: 30px; opacity: 0.7;">${loc}</span>`;
+
+                tbody.innerHTML += `
+                    <tr style="transition: all 0.3s ease;">
+                        <td>${badge}</td>
+                        <td class="text-start fw-bold fs-6 text-light">${echipa.echipa}</td>
+                        <td class="text-muted">${echipa.meciuri}</td>
+                        <td class="text-light">${echipa.gd}</td>
+                        <td class="text-light">${echipa.gp}</td>
+                        <td class="text-info fw-bold">${echipa.golaveraj > 0 ? '+'+echipa.golaveraj : echipa.golaveraj}</td>
+                        <td class="fw-bold text-warning fs-5">${echipa.puncte}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Ascultăm schimbările pe fiecare căsuță de scor
+        const inputs = document.querySelectorAll('.score-input');
+        inputs.forEach(input => input.addEventListener('input', calculeazaClasament));
+
+        // Rulăm calculul o dată la deschiderea paginii pentru a arăta clasamentul inițial
+        calculeazaClasament();
+    </script>
+</body>
+</html>

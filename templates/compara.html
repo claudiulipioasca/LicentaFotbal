@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparare Echipe (H2H)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: linear-gradient(135deg, #12141d 0%, #1b2028 100%) !important;
+            background-attachment: fixed !important;
+            color: #f8f9fa;
+            animation: intrareLina 0.5s ease-out;
+        }
+
+        @keyframes intrareLina {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3, .fw-bold {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+        }
+
+        .card, .modal-content, .table-container, .list-group-item {
+            background: rgba(33, 37, 41, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .btn {
+            border-radius: 8px !important;
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #198754, #20c997) !important;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffecd2) !important;
+            color: #000 !important;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) !important;
+            filter: brightness(1.1);
+        }
+
+        .table { background-color: transparent !important; color: #e9ecef !important; }
+        .table-dark { --bs-table-bg: transparent; }
+        .table-striped>tbody>tr:nth-of-type(odd)>* { background-color: rgba(255, 255, 255, 0.02) !important; color: #e9ecef !important; }
+        .table-hover>tbody>tr:hover>* { background-color: rgba(255, 255, 255, 0.06) !important; color: #fff !important; }
+        td, th { border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+            border-radius: 8px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .text-muted {
+            color: #adb5bd !important;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .card .text-muted {
+            color: #ced4da !important;
+        }
+
+        .stat-row { border-bottom: 1px solid #dee2e6; padding: 12px 0; }
+        .winner { font-weight: 900; color: #198754; font-size: 1.5rem; }
+        .loser { color: #dc3545; font-size: 1.3rem; }
+        .neutral { color: #6c757d; font-size: 1.3rem; }
+        option {
+            background-color: #1a1d20 !important;
+            color: #f8f9fa !important;
+        }
+.stat-row .text-uppercase {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 1px !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+.row .text-muted.align-self-center {
+    color: #ffc107 !important; /* Galben (ca titlul) pentru a contrasta cu numele echipelor */
+    opacity: 1 !important;
+    font-size: 1.1rem !important;
+}
+    </style>
+</head>
+<body class="bg-dark text-light pb-5">
+
+    <div class="container mt-5">
+        <a href="/" class="btn btn-outline-light mb-4">← Acasă</a>
+        <h1 class="text-center mb-5 fw-bold text-warning">Comparație Directă (Head-to-Head) ⚔️</h1>
+
+        <div class="card bg-secondary text-light shadow-lg mb-5 border-0">
+            <div class="card-body p-4">
+                <form method="GET" action="/compara">
+                    <div class="row align-items-center text-center">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label fs-5 fw-bold">Alege Echipa 1</label>
+                            <select name="echipa1" class="form-select form-select-lg bg-dark text-light border-secondary">
+                                <option value="">-- Selectează din toată Europa --</option>
+                                {% for echipa in echipe %}
+                                    <option value="{{ echipa }}" {% if echipa == e1 %}selected{% endif %}>{{ echipa }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <h2 class="mt-4 fw-bold text-warning" style="font-size: 3rem;">VS</h2>
+                        </div>
+
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label fs-5 fw-bold">Alege Echipa 2</label>
+                            <select name="echipa2" class="form-select form-select-lg bg-dark text-light border-secondary">
+                                <option value="">-- Selectează din toată Europa --</option>
+                                {% for echipa in echipe %}
+                                    <option value="{{ echipa }}" {% if echipa == e2 %}selected{% endif %}>{{ echipa }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold px-5 shadow">Analizează Confruntarea 🔍</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if s1 and s2 %}
+        <div class="card bg-light text-dark shadow-lg border-0 rounded-4">
+            <div class="card-header bg-dark text-white text-center py-3 rounded-top-4">
+                <h3 class="mb-0 fw-bold">Rezultat Analiză Sezon Curent</h3>
+            </div>
+            <div class="card-body px-2 py-4 px-md-5">
+
+                <div class="row text-center mb-4 pb-3 border-bottom border-3 border-dark">
+                    <div class="col-4"><h2 class="fw-bold text-primary">{{ s1.Nume }}</h2></div>
+                    <div class="col-4 text-muted align-self-center fw-bold fs-5 text-uppercase">Parametru</div>
+                    <div class="col-4"><h2 class="fw-bold text-danger">{{ s2.Nume }}</h2></div>
+                </div>
+
+                {% macro comparatie(titlu, val1, val2, mai_mic_e_mai_bine=False) %}
+                    {% set win1 = (val1 < val2) if mai_mic_e_mai_bine else (val1 > val2) %}
+                    {% set win2 = (val2 < val1) if mai_mic_e_mai_bine else (val2 > val1) %}
+                    {% set egal = (val1 == val2) %}
+
+                    {% set total = val1 + val2 %}
+                    {% set proc1 = (val1 / total * 100) | round if total > 0 else 50 %}
+                    {% set proc2 = (val2 / total * 100) | round if total > 0 else 50 %}
+
+                    <div class="stat-row py-3">
+                        <div class="row text-center align-items-center mb-2">
+                            <div class="col-4 {{ 'winner' if win1 else ('loser' if not egal else 'neutral') }}">
+                                <span class="fs-4">{{ val1 }}</span>
+                            </div>
+                            <div class="col-4 fw-bold text-dark fs-6 text-uppercase">{{ titlu }}</div>
+                            <div class="col-4 {{ 'winner' if win2 else ('loser' if not egal else 'neutral') }}">
+                                <span class="fs-4">{{ val2 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center">
+                            <div class="col-10 col-md-8">
+                                <div class="progress shadow-sm" style="height: 8px; border-radius: 10px; background-color: #dee2e6;">
+                                    <div class="progress-bar {{ 'bg-success' if win1 else ('bg-danger' if not egal else 'bg-secondary') }}" role="progressbar" style="width: {{ proc1 }}%;"></div>
+                                    <div class="progress-bar {{ 'bg-success' if win2 else ('bg-danger' if not egal else 'bg-secondary') }}" role="progressbar" style="width: {{ proc2 }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endmacro %}
+
+                {{ comparatie('Meciuri Jucate', s1.Meciuri, s2.Meciuri) }}
+                {{ comparatie('Victorii', s1.Victorii, s2.Victorii) }}
+                {{ comparatie('Egaluri', s1.Egaluri, s2.Egaluri) }}
+                {{ comparatie('Înfrângeri', s1.Infrangeri, s2.Infrangeri, mai_mic_e_mai_bine=True) }}
+                {{ comparatie('Goluri Marcate', s1.Goluri_Date, s2.Goluri_Date) }}
+                {{ comparatie('Goluri Primite', s1.Goluri_Primite, s2.Goluri_Primite, mai_mic_e_mai_bine=True) }}
+                {{ comparatie('Medie Goluri Date / Meci', s1.Media_Goluri, s2.Media_Goluri) }}
+                {{ comparatie('Medie Șuturi / Meci', s1.Media_Suturi, s2.Media_Suturi) }}
+                {{ comparatie('Medie Cornere / Meci', s1.Media_Cornere, s2.Media_Cornere) }}
+
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

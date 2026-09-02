@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil {{ nume_echipa }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: linear-gradient(135deg, #12141d 0%, #1b2028 100%) !important;
+            background-attachment: fixed !important;
+            color: #f8f9fa;
+            animation: intrareLina 0.5s ease-out;
+        }
+
+        @keyframes intrareLina {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3, .fw-bold {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+        }
+
+        .card, .modal-content, .table-container, .list-group-item {
+            background: rgba(33, 37, 41, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .btn {
+            border-radius: 8px !important;
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: none !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #198754, #20c997) !important;
+            box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #ffecd2) !important;
+            color: #000 !important;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3) !important;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) !important;
+            filter: brightness(1.1);
+        }
+
+        .table { background-color: transparent !important; color: #e9ecef !important; }
+        .table-dark { --bs-table-bg: transparent; }
+        .table-striped>tbody>tr:nth-of-type(odd)>* { background-color: rgba(255, 255, 255, 0.02) !important; color: #e9ecef !important; }
+        .table-hover>tbody>tr:hover>* { background-color: rgba(255, 255, 255, 0.06) !important; color: #fff !important; }
+        td, th { border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; }
+
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+            border-radius: 8px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .text-muted {
+            color: #adb5bd !important;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .card .text-muted {
+            color: #ced4da !important;
+        }
+
+        .form-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .form-badge:hover { transform: scale(1.15); cursor: pointer; }
+        .form-w { background-color: #198754; }
+        .form-d { background-color: #ffc107; color: black; }
+        .form-l { background-color: #dc3545; }
+
+        .modal-content {
+            background-color: #1a1d20 !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        .modal-body h4 {
+            color: #ffffff !important;
+            font-family: 'Oswald', sans-serif !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .modal-body .bg-light {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 8px;
+        }
+
+        .modal-body .text-muted {
+            color: #ffc107 !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .modal-footer.bg-light {
+            background-color: #1a1d20 !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .border-bottom {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light">
+
+    <div class="container mt-5">
+        <a href="/liga/{{ id_liga }}" class="btn btn-outline-light mb-4">← Înapoi la Clasament</a>
+
+        <h1 class="text-center mb-2">Profil Echipa: <span class="text-success">{{ nume_echipa }}</span></h1>
+
+        <div class="text-center mb-5">
+            <span class="text-muted fw-bold me-2 align-middle fs-5">Forma (Ultimele 5):</span>
+            {% for rezultat in forma %}
+                {% if rezultat == 'V' %}
+                    <span class="form-badge form-w mx-1" title="Victorie">V</span>
+                {% elif rezultat == 'E' %}
+                    <span class="form-badge form-d mx-1" title="Egal">E</span>
+                {% elif rezultat == 'I' %}
+                    <span class="form-badge form-l mx-1" title="Înfrângere">Î</span>
+                {% endif %}
+            {% endfor %}
+            {% if not forma %}
+                <span class="text-muted fst-italic">Date insuficiente</span>
+            {% endif %}
+        </div>
+
+        <h3 class="mb-3 border-bottom border-secondary pb-2 mt-5">Predicție Algoritmică</h3>
+        <div class="card bg-dark border-light mb-4 shadow-lg">
+            <div class="card-body text-center p-4">
+                <div class="row align-items-center mb-4">
+                    <div class="col-4">
+                        {% if logo_gazda_viitor %}
+                            <img src="{{ logo_gazda_viitor }}" width="60" height="60" class="mb-3 bg-light rounded-circle p-1 shadow" style="object-fit: contain;">
+                        {% endif %}
+                        <h3 class="text-info fw-bold">{{ gazda_viitor }}</h3>
+                        <h2 class="text-success mt-2">{{ sansa_gazda }}%</h2>
+                        <small class="text-muted">Șansă victorie</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-light mt-4">VS</h4>
+                        <h5 class="text-warning mt-3">{{ sansa_egal }}%</h5>
+                        <small class="text-muted">Probabilitate Egal</small>
+                    </div>
+                    <div class="col-4">
+                        {% if logo_oaspete_viitor %}
+                            <img src="{{ logo_oaspete_viitor }}" width="60" height="60" class="mb-3 bg-light rounded-circle p-1 shadow" style="object-fit: contain;">
+                        {% endif %}
+                        <h3 class="text-light fw-bold">{{ oaspete_viitor }}</h3>
+                        <h2 class="text-success mt-2">{{ sansa_oaspete }}%</h2>
+                        <small class="text-muted">Șansă victorie</small>
+                    </div>
+                </div>
+
+                <div class="progress shadow-sm mt-2" style="height: 14px; border-radius: 20px; background-color: #343a40;">
+                    <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ sansa_gazda }}%" title="Gazdă: {{ sansa_gazda }}%"></div>
+                    <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ sansa_egal }}%" title="Egal: {{ sansa_egal }}%"></div>
+                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: {{ sansa_oaspete }}%" title="Oaspete: {{ sansa_oaspete }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        {% if explicatii %}
+        <div class="card bg-dark border-secondary mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-light fw-bold">
+                🧠 Explainable AI: De ce a prezis modelul asta?
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Analiză <strong>SHAP</strong> privind factorii care au influențat șansa de victorie a echipei gazdă:
+                </p>
+
+                <ul class="list-group list-group-flush bg-dark">
+                    {% for expl in explicatii %}
+                        <li class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center px-0">
+                            <span>{{ expl.factor }}</span>
+                            {% if expl.pozitiv %}
+                                <span class="badge bg-success rounded-pill px-3 py-2">+{{ expl.impact }}%</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-3 py-2">{{ expl.impact }}%</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-center gap-3 mt-4 mb-5 flex-wrap">
+            <a href="/statistici/{{ id_liga }}/{{ nume_echipa }}" class="btn btn-success btn-lg shadow">Vezi Statistici Detaliate 📊</a>
+            <a href="/lot/{{ id_liga }}/{{ nume_echipa }}" class="btn btn-info btn-lg shadow text-dark fw-bold">Vezi Lotul Echipei 👕</a>
+        </div>
+
+        <h3 class="mb-4 border-bottom border-secondary pb-2 mt-5">Istoric Meciuri Sezon</h3>
+
+        <div class="table-responsive p-3 mb-5 shadow-lg" style="background-color: #212529; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;">
+            <table class="table table-dark table-striped table-hover m-0 text-center align-middle" style="background-color: transparent;">
+                <thead style="border-bottom: 2px solid #198754;">
+                    <tr>
+                        <th class="text-uppercase text-muted pb-3">Data</th>
+                        <th class="text-uppercase text-muted pb-3">Meci</th>
+                        <th class="text-uppercase text-muted pb-3">Scor</th>
+                        <th class="text-uppercase text-muted pb-3">Acțiune</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for meci in meciuri %}
+                    <tr>
+                        <td class="text-light opacity-75">{{ meci['Data'] }}</td>
+                        <td class="fw-bold fs-6 text-light">{{ meci['Echipa_Gazda'] }} - {{ meci['Echipa_Oaspete'] }}</td>
+                        <td class="fw-bold fs-5 text-success">{{ meci['Scor'] }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info fw-bold px-3 py-1" data-bs-toggle="modal" data-bs-target="#modalMeci{{ loop.index }}">
+                                Vezi Detalii 📊
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if not meciuri %}
+                <h5 class="text-danger text-center mt-4 mb-3">Nu există meciuri de afișat.</h5>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {% for meci in meciuri %}
+    <div class="modal fade" id="modalMeci{{ loop.index }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-light">
+                    <h5 class="modal-title fw-bold">Statistici Detaliate Meci</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body text-center p-4">
+                    <h4 class="mb-4 fw-bold text-light">{{ meci['Echipa_Gazda'] }} <span class="text-success mx-2">{{ meci['Scor'] }}</span> {{ meci['Echipa_Oaspete'] }}</h4>
+
+                    {% if meci['Suturi_Gazda'] != '-' %}
+                    <div class="row mb-2 pb-2 border-bottom">
+                        <div class="col-4 fw-bold fs-4 text-primary">{{ meci['Suturi_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">Șuturi Meci</div>
+                        <div class="col-4 fw-bold fs-4 text-primary">{{ meci['Suturi_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if meci['Suturi_Poarta_Gazda'] != '-' %}
+                    <div class="row mb-2 pb-2 border-bottom bg-light">
+                        <div class="col-4 fw-bold fs-4 text-info">{{ meci['Suturi_Poarta_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">Șuturi pe Poartă</div>
+                        <div class="col-4 fw-bold fs-4 text-info">{{ meci['Suturi_Poarta_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if meci['Cornere_Gazda'] != '-' %}
+                    <div class="row mb-2 pb-2 border-bottom">
+                        <div class="col-4 fw-bold fs-4 text-success">{{ meci['Cornere_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">Cornere</div>
+                        <div class="col-4 fw-bold fs-4 text-success">{{ meci['Cornere_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if meci['Falturi_Gazda'] != '-' %}
+                    <div class="row mb-2 pb-2 border-bottom bg-light">
+                        <div class="col-4 fw-bold fs-4 text-secondary">{{ meci['Falturi_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">Falturi</div>
+                        <div class="col-4 fw-bold fs-4 text-secondary">{{ meci['Falturi_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if meci['Galbene_Gazda'] != '-' %}
+                    <div class="row mb-2 pb-2 border-bottom">
+                        <div class="col-4 fw-bold fs-4 text-warning">{{ meci['Galbene_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">🟨 Cartonașe Galbene</div>
+                        <div class="col-4 fw-bold fs-4 text-warning">{{ meci['Galbene_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if meci['Rosii_Gazda'] != '-' %}
+                    <div class="row pt-1">
+                        <div class="col-4 fw-bold fs-4 text-danger">{{ meci['Rosii_Gazda'] }}</div>
+                        <div class="col-4 text-muted fw-bold align-self-center">🟥 Cartonașe Roșii</div>
+                        <div class="col-4 fw-bold fs-4 text-danger">{{ meci['Rosii_Oaspete'] }}</div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <div class="modal-footer justify-content-center bg-light border-top-0">
+                    <button type="button" class="btn btn-dark w-50 fw-bold" data-bs-dismiss="modal">Închide Detaliile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

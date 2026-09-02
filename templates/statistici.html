@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistici {{ nume_echipa }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background: linear-gradient(135deg, #12141d 0%, #1b2028 100%) !important;
+            background-attachment: fixed !important;
+            color: #f8f9fa;
+            animation: intrareLina 0.5s ease-out;
+        }
+
+        @keyframes intrareLina {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3, .fw-bold {
+            font-family: 'Oswald', sans-serif !important;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            background: rgba(33, 37, 41, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn {
+            border-radius: 8px !important;
+            font-family: 'Oswald', sans-serif !important;
+            text-transform: uppercase;
+            transition: all 0.3s ease !important;
+        }
+
+        .text-muted {
+            color: #adb5bd !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-dark text-light">
+    <div class="container mt-5">
+        <a href="/echipa/{{ id_liga }}/{{ nume_echipa }}" class="btn btn-outline-light mb-4">← Înapoi la Profil</a>
+
+        <h1 class="text-center mb-5">Statistici Avansate: <span class="text-success">{{ nume_echipa }}</span></h1>
+
+        <h3 class="mt-5 border-bottom border-secondary pb-2">Performanță Colectivă Sezon</h3>
+        <div class="row mt-4">
+            <div class="col-md-4 mb-4">
+                <div class="card bg-secondary text-light shadow h-100 border-success border-2">
+                    <div class="card-body text-center">
+                        <h4 class="card-title text-success mb-3">📈 Rata de Victorii</h4>
+                        <h2 class="fw-bold" style="font-size: 3rem;">{{ win_rate }}%</h2>
+                        <p class="text-light mt-2">{{ victorii }} victorii în {{ total_meciuri }} meciuri</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card bg-secondary text-light shadow h-100 border-info border-2">
+                    <div class="card-body text-center">
+                        <h4 class="card-title text-info mb-3">⚽ Goluri Marcate / Meci</h4>
+                        <h2 class="fw-bold" style="font-size: 3rem;">{{ medie_goluri_meci }}</h2>
+                        <p class="text-light mt-2">Eficiență ofensivă medie</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card bg-secondary text-light shadow h-100 border-warning border-2">
+                    <div class="card-body text-center">
+                        <h4 class="card-title text-warning mb-3">📊 Diferență Medie Scor</h4>
+                        <h2 class="fw-bold" style="font-size: 3rem;">{{ "+" if golaveraj_mediu > 0 }}{{ golaveraj_mediu }}</h2>
+                        <p class="text-light mt-2">Golaveraj mediu per meci</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-6 mb-4">
+                <div class="card bg-secondary text-light shadow p-3">
+                    <h4 class="card-title text-center mb-4">Distribuție Rezultate</h4>
+                    <canvas id="formaChart"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card bg-secondary text-light shadow p-3">
+                    <h4 class="card-title text-center mb-4">Raport Goluri (Total)</h4>
+                    <canvas id="goluriChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const victorii = {{ victorii }};
+        const egaluri = {{ egaluri }};
+        const infrangeri = {{ infrangeri }};
+        const goluriDate = {{ goluri_date }};
+        const goluriPrimite = {{ goluri_primite }};
+
+        new Chart(document.getElementById('formaChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Victorii', 'Egaluri', 'Înfrângeri'],
+                datasets: [{
+                    data: [victorii, egaluri, infrangeri],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: { legend: { labels: { color: 'white', font: { size: 14 } } } }
+            }
+        });
+
+        new Chart(document.getElementById('goluriChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Goluri Marcate', 'Goluri Primite'],
+                datasets: [{
+                    data: [goluriDate, goluriPrimite],
+                    backgroundColor: ['#0d6efd', '#fd7e14'],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                    x: { ticks: { color: 'white' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knockout UCL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+            background-color: #12141d !important;
+            color: #f8f9fa;
+        }
+
+        h1, h2, h3, .fw-bold { font-family: 'Oswald', sans-serif !important; }
+
+        .dashboard-header {
+            padding: 20px 30px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .bracket-wrapper {
+            width: 100%;
+            overflow: auto;
+            padding: 60px 40px;
+            scrollbar-width: thin;
+            scrollbar-color: #20c997 #1a1d20;
+            height: 85vh;
+        }
+
+        .bracket-board {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            min-width: max-content;
+        }
+
+        .bracket-column {
+            display: flex;
+            flex-direction: column;
+            width: 260px;
+            margin-right: 60px;
+            position: relative;
+        }
+
+        .bracket-column:last-child { margin-right: 0; }
+
+        .round-title {
+            text-align: center;
+            color: #adb5bd;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        /* MATEMATICA SLOTURILOR PENTRU ALINIEREA LINIILOR */
+        .slot { display: flex; align-items: center; width: 100%; position: relative; }
+        .slot-1 { height: 110px; }  /* Saisprezecimi */
+        .slot-2 { height: 220px; }  /* Optimi */
+        .slot-3 { height: 440px; }  /* Sferturi */
+        .slot-4 { height: 880px; }  /* Semifinale */
+        .slot-5 { height: 1760px; } /* Finala */
+
+        /* CONECTORI CSS */
+        .bracket-column:not(:last-child) .match-card::after {
+            content: ''; position: absolute;
+            right: -30px; top: 50%;
+            width: 30px; height: 2px;
+            background: #495057;
+        }
+        .slot-2::before, .slot-3::before, .slot-4::before, .slot-5::before {
+            content: ''; position: absolute;
+            left: -30px; top: 25%;
+            width: 30px; height: 50%;
+            border: 2px solid #495057; border-right: none;
+        }
+        .slot-2::after, .slot-3::after, .slot-4::after, .slot-5::after {
+            content: ''; position: absolute;
+            left: -30px; top: 50%;
+            width: 30px; height: 2px;
+            background: #495057;
+        }
+
+        /* CARD MECI */
+        .match-card {
+            width: 100%;
+            background: #1e2126;
+            border-radius: 6px;
+            border: 1px solid #2a2e35;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .match-card:hover {
+            border-color: #20c997;
+            background: #23272d;
+            transform: scale(1.03);
+        }
+
+        .match-status {
+            font-size: 9px;
+            color: #888;
+            text-align: center;
+            background: #16181c;
+            border-bottom: 1px solid #2a2e35;
+            padding: 2px 0;
+            border-radius: 6px 6px 0 0;
+            text-transform: uppercase;
+            position: absolute;
+            top: 0; width: 100%;
+        }
+
+        .teams-container { margin-top: 15px; }
+
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 12px;
+        }
+
+        .team-name {
+            font-size: 13px; font-weight: 500; color: #ddd;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;
+        }
+
+        /* SCORURI TUR-RETUR */
+        .score-container { display: flex; gap: 4px; }
+        .score-box {
+            width: 24px; height: 24px;
+            text-align: center; line-height: 24px;
+            font-size: 12px; font-weight: bold;
+            border-radius: 3px; font-family: 'Oswald', sans-serif;
+        }
+        .score-box.tur { background: #343a40; color: #adb5bd; }
+        .score-box.retur { background: #20c997; color: #fff; }
+        .score-box.singur { background: #0d6efd; color: #fff; width: 32px; }
+
+        .winner .team-name { color: #fff; font-weight: 700; }
+        .slot-5 .match-card { border-color: #ffc107; box-shadow: 0 0 20px rgba(255,193,7,0.2); }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="text-success fw-bold m-0">⚔️ Tablou UCL 2025/2026</h2>
+            <a href="/" class="btn btn-sm btn-outline-light px-3">Închide ✖</a>
+        </div>
+    </div>
+
+    <div class="bracket-wrapper">
+        <div class="bracket-board">
+
+            <div class="bracket-column">
+                <div class="round-title">Șaisprezecimi</div>
+                {% for meci in bracket.saisprezecimi %}
+                <div class="slot slot-1">
+                    <div class="match-card">
+                        <div class="match-status">{{ meci.status }}</div>
+                        <div class="teams-container">
+                            <div class="team-row {% if meci.echipa2 != '-' %}border-bottom{% endif %}" style="border-color: rgba(255,255,255,0.05);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ meci.logo1 }}" width="18" height="18" class="bg-light rounded-circle p-1">
+                                    <span class="team-name">{{ meci.echipa1 }}</span>
+                                </div>
+                                <div class="score-container">
+                                    {% if '-' in meci.scor1 %}
+                                        <span class="score-box tur">{{ meci.scor1.split('-')[0] }}</span>
+                                        <span class="score-box retur">{{ meci.scor2.split('-')[0] }}</span>
+                                    {% else %}
+                                        <span class="score-box singur">{{ meci.scor1 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if meci.echipa2 != '-' %}
+                            <div class="team-row">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ meci.logo2 }}" width="18" height="18" class="bg-light rounded-circle p-1">
+                                    <span class="team-name">{{ meci.echipa2 }}</span>
+                                </div>
+                                <div class="score-container">
+                                    {% if '-' in meci.scor2 %}
+                                        <span class="score-box tur">{{ meci.scor1.split('-')[1] }}</span>
+                                        <span class="score-box retur">{{ meci.scor2.split('-')[1] }}</span>
+                                    {% else %}
+                                        <span class="score-box singur">{{ meci.scor2 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="bracket-column">
+                <div class="round-title">Optimi</div>
+                {% for meci in bracket.optimi %}
+                <div class="slot slot-2">
+                    <div class="match-card">
+                        <div class="match-status">{{ meci.status }}</div>
+                        <div class="teams-container">
+                            <div class="team-row border-bottom" style="border-color: rgba(255,255,255,0.05);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ meci.logo1 }}" width="18" height="18" class="bg-light rounded-circle p-1">
+                                    <span class="team-name">{{ meci.echipa1 }}</span>
+                                </div>
+                                <span class="score-box singur">{{ meci.scor1 }}</span>
+                            </div>
+                            <div class="team-row">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ meci.logo2 }}" width="18" height="18" class="bg-light rounded-circle p-1">
+                                    <span class="team-name">{{ meci.echipa2 }}</span>
+                                </div>
+                                <span class="score-box singur">{{ meci.scor2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="bracket-column">
+                <div class="round-title">Sferturi</div>
+                {% for meci in bracket.sferturi %}
+                <div class="slot slot-3">
+                    <div class="match-card">
+                        <div class="match-status">{{ meci.status }}</div>
+                        <div class="teams-container">
+                            <div class="team-row border-bottom" style="border-color: rgba(255,255,255,0.05);">
+                                <span class="team-name text-muted">{{ meci.echipa1 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                            <div class="team-row">
+                                <span class="team-name text-muted">{{ meci.echipa2 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="bracket-column">
+                <div class="round-title">Semifinale</div>
+                {% for meci in bracket.semifinale %}
+                <div class="slot slot-4">
+                    <div class="match-card">
+                        <div class="match-status">{{ meci.status }}</div>
+                        <div class="teams-container">
+                            <div class="team-row border-bottom" style="border-color: rgba(255,255,255,0.05);">
+                                <span class="team-name text-muted">{{ meci.echipa1 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                            <div class="team-row">
+                                <span class="team-name text-muted">{{ meci.echipa2 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="bracket-column">
+                <div class="round-title text-warning">🏆 Finala</div>
+                {% for meci in bracket.finala %}
+                <div class="slot slot-5">
+                    <div class="match-card">
+                        <div class="match-status text-warning">{{ meci.status }}</div>
+                        <div class="teams-container">
+                            <div class="team-row border-bottom" style="border-color: rgba(255,255,255,0.05);">
+                                <span class="team-name fw-bold">{{ meci.echipa1 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                            <div class="team-row">
+                                <span class="team-name fw-bold">{{ meci.echipa2 }}</span>
+                                <span class="score-box singur">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
